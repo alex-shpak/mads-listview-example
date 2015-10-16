@@ -3,7 +3,11 @@ package com.example.madslistviewexample;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.widget.FrameLayout;
 import android.widget.TextView;
+import com.mads.adview.AdViewCore;
 import com.madsadview.MadsInlineAdView;
 
 public class MadsViewAdapter<T> extends AdvertisingViewAdapter<T> {
@@ -54,10 +58,7 @@ public class MadsViewAdapter<T> extends AdvertisingViewAdapter<T> {
                 if(convertView == null) {
                     convertView = inflater.inflate(R.layout.layout_inline_ads, parent, false);
                     adsViewHolder = new AdsViewHolder(convertView);
-
-                    adsViewHolder.adView.setLocationDetection(false);
-                    adsViewHolder.adView.setEnableExpandInActivity(false);
-                    adsViewHolder.adView.setPlacementId(getPlacement());
+                    onAdInflated(adsViewHolder);
                 } else {
                     adsViewHolder = (AdsViewHolder) convertView.getTag();
                 }
@@ -74,11 +75,46 @@ public class MadsViewAdapter<T> extends AdvertisingViewAdapter<T> {
         }
     }
 
+    private void onAdInflated(AdsViewHolder adsViewHolder) {
+        final MadsInlineAdView adView = adsViewHolder.adView;
+        final FrameLayout card = adsViewHolder.card;
+
+        adView.setLocationDetection(false);
+        adView.setEnableExpandInActivity(false);
+        adView.setPlacementId(getPlacement());
+
+        adView.setOnAdDownload(new AdViewCore.OnAdDownload() {
+            @Override
+            public void begin(AdViewCore adViewCore) {
+                card.setVisibility(View.INVISIBLE);
+            }
+
+            @Override
+            public void end(AdViewCore adViewCore) {
+                Animation fade = AnimationUtils.loadAnimation(adViewCore.getContext(), R.anim.fade_in);
+                card.setVisibility(View.VISIBLE);
+                card.startAnimation(fade);
+            }
+
+            @Override
+            public void error(AdViewCore adViewCore, String s) {
+
+            }
+
+            @Override
+            public void noad(AdViewCore adViewCore) {
+
+            }
+        });
+    }
+
     public static class AdsViewHolder {
         public final MadsInlineAdView adView;
+        public final FrameLayout card;
         public int position = 0;
 
         public AdsViewHolder(View converView) {
+            this.card = (FrameLayout) converView;
             this.adView = (MadsInlineAdView) converView.findViewById(R.id.mads_inline);
             converView.setTag(this);
         }

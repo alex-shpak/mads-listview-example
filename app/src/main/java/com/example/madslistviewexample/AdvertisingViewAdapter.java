@@ -17,7 +17,7 @@ public abstract class AdvertisingViewAdapter<T> extends BaseAdapter {
      * @param interval number of posts between the ads + 1
      * @param offset number of posts before first ad
      */
-    public void setGroupSize(int interval, int offset) {
+    public void setGroupSize(int offset, int interval) {
         this.groupSize = interval + 1;
         this.offset = offset;
     }
@@ -63,6 +63,10 @@ public abstract class AdvertisingViewAdapter<T> extends BaseAdapter {
         return list.size();
     }
 
+    /**
+     * @param position position of element in adapter
+     * @return true if specified position should be advertising element
+     */
     protected boolean isAdvertising(int position) {
         if(isAdvertisingEnabled())
             return position >= offset && (position - offset) % (groupSize) == 0; //show ads each %groupSize% items
@@ -70,9 +74,13 @@ public abstract class AdvertisingViewAdapter<T> extends BaseAdapter {
         return false;
     }
 
+    /**
+     * @param position original position of element in adapter
+     * @return updated position for element (original position - amount of ads above)
+     */
     protected int shiftPosition(int position) {
         if(isAdvertisingEnabled())
-            return position - (position - offset) / groupSize; //shift up for places that was took by ads
+            return position - (position - offset) / groupSize - (position < offset ? 0 : 1); //shift up for places that was took by ads
 
         return position;
     }
